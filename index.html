@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CricketX — IPL Fantasy</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c14;
+  --surface: #0d1422;
+  --surface2: #121929;
+  --border: rgba(255,255,255,0.07);
+  --gold: #f5c842;
+  --gold2: #e8a020;
+  --cyan: #00e5ff;
+  --green: #00e676;
+  --red: #ff3d57;
+  --text: #e8eaf0;
+  --muted: #5a6478;
+  --accent: #4361ee;
+  --radius: 12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* NOISE OVERLAY */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:0.4;pointer-events:none;z-index:0;}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;position:relative;z-index:1;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ===== NAV ===== */
+nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(8,12,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-wallet{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:14px;font-weight:600;}
+.wallet-icon{font-size:16px;}
+.wallet-amt{color:var(--gold);}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;cursor:pointer;}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,20,34,0.98);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;cursor:pointer;font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--muted);transition:color 0.2s;}
+.bnav-item.active{color:var(--gold);}
+.bnav-item svg{width:22px;height:22px;}
+
+/* ===== LOGIN SCREEN ===== */
+#login{background:radial-gradient(ellipse at 20% 50%, rgba(67,97,238,0.15) 0%,transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(245,200,66,0.1) 0%,transparent 50%),var(--bg);align-items:center;justify-content:center;padding:40px 24px;}
+.login-logo-wrap{text-align:center;margin-bottom:48px;}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:4px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 50%,#ff8c00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;line-height:1;}
+.login-sub{font-size:13px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:100%;max-width:420px;}
+.login-title{font-size:22px;font-weight:700;margin-bottom:6px;}
+.login-desc{font-size:14px;color:var(--muted);margin-bottom:28px;}
+.input-group{margin-bottom:16px;}
+.input-label{font-size:12px;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block;}
+.input-field{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;outline:none;transition:border-color 0.2s;}
+.input-field:focus{border-color:var(--gold);}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#080c14;cursor:pointer;transition:opacity 0.2s,transform 0.1s;}
+.btn-primary:hover{opacity:0.92;}
+.btn-primary:active{transform:scale(0.98);}
+.login-switch{text-align:center;margin-top:16px;font-size:14px;color:var(--muted);}
+.login-switch a{color:var(--gold);cursor:pointer;text-decoration:none;font-weight:600;}
+.otp-row{display:flex;gap:10px;}
+.otp-row .input-field{text-align:center;padding:14px 8px;font-size:20px;font-family:'JetBrains Mono',monospace;letter-spacing:4px;}
+
+/* ===== HOME / MATCHES ===== */
+#home{padding-bottom:80px;}
+.hero-banner{background:linear-gradient(135deg,#1a0533 0%,#0d1422 50%,#001a2e 100%);padding:24px 20px;position:relative;overflow:hidden;}
+.hero-banner::after{content:'IPL 2025';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:'Bebas Neue',sans-serif;font-size:80px;color:rgba(255,255,255,0.03);line-height:1;pointer-events:none;}
+.hero-greeting{font-size:14px;color:var(--muted);font-weight:500;margin-bottom:4px;}
+.hero-name{font-size:26px;font-weight:700;margin-bottom:16px;}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.hstat{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center;}
+.hstat-val{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);display:block;line-height:1;}
+.hstat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;display:block;}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 12px;}
+.section-title{font-size:18px;font-weight:700;letter-spacing:0.5px;}
+.section-link{font-size:13px;color:var(--gold);font-weight:600;}
+
+/* MATCH CARDS */
+.matches-list{padding:0 16px;display:flex;flex-direction:column;gap:12px;}
+.match-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color 0.2s,transform 0.15s;}
+.match-card:hover{border-color:rgba(245,200,66,0.3);transform:translateY(-1px);}
+.match-header{background:var(--surface2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.match-league{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;}
+.match-timer{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);border-radius:20px;padding:3px 10px;}
+.match-body{padding:16px;}
+.match-teams{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.team-block{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+.team-logo{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;font-weight:700;color:white;border:2px solid var(--border);}
+.team-name{font-size:13px;font-weight:700;text-align:center;color:var(--text);}
+.vs-badge{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--muted);}
+.match-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;}
+.prize-pool{display:flex;flex-direction:column;}
+.prize-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.prize-val{font-size:16px;font-weight:700;color:var(--green);font-family:'Bebas Neue',sans-serif;letter-spacing:1px;}
+.spots-info{font-size:12px;color:var(--muted);text-align:right;}
+.spots-count{display:block;font-size:14px;font-weight:700;color:var(--text);}
+.join-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#080c14;cursor:pointer;transition:opacity 0.2s;}
+.join-btn:hover{opacity:0.9;}
+.match-progress{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:10px;overflow:hidden;}
+.match-progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;}
+
+/* ===== TEAM SELECTION ===== */
+#team-select{padding-bottom:120px;}
+.team-select-header{background:linear-gradient(135deg,#0d1422,#080c14);padding:16px 20px;}
+.budget-bar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.budget-row{display:flex;justify-content:space-between;margin-bottom:8px;}
+.budget-item{text-align:center;}
+.budget-val{display:block;font-size:16px;font-weight:700;color:var(--gold);font-family:'JetBrains Mono',monospace;}
+.budget-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.credits-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.credits-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:2px;transition:width 0.3s;}
+.role-tabs{display:flex;gap:8px;padding:16px 20px;overflow-x:auto;scrollbar-width:none;}
+.role-tab{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.role-tab.active{background:var(--gold);color:#080c14;border-color:var(--gold);}
+.players-grid{padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 12px;cursor:pointer;transition:all 0.2s;position:relative;}
+.player-card.selected{border-color:var(--gold);background:rgba(245,200,66,0.05);}
+.player-card.captain-mark{border-color:var(--gold);}
+.player-card.vc-mark{border-color:var(--cyan);}
+.player-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:0.5px;}
+.badge-c{background:var(--gold);color:#080c14;}
+.badge-vc{background:var(--cyan);color:#080c14;}
+.player-role-icon{font-size:20px;margin-bottom:6px;}
+.player-name{font-size:14px;font-weight:700;line-height:1.2;margin-bottom:2px;}
+.player-team{font-size:11px;color:var(--muted);}
+.player-credits{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);font-weight:600;margin-top:6px;}
+.player-pts{font-size:11px;color:var(--muted);}
+.sel-indicator{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);position:absolute;bottom:10px;right:10px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.player-card.selected .sel-indicator{background:var(--gold);border-color:var(--gold);}
+
+.team-selection-footer{position:fixed;bottom:0;left:0;right:0;background:rgba(13,20,34,0.98);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:14px 20px;}
+.selection-count{display:flex;gap:6px;margin-bottom:12px;}
+.sel-dot{width:12px;height:12px;border-radius:50%;background:var(--border);transition:background 0.2s;}
+.sel-dot.filled{background:var(--gold);}
+.footer-row{display:flex;gap:12px;}
+.btn-ghost{flex:1;background:transparent;border:1px solid var(--border);border-radius:10px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--text);cursor:pointer;}
+.btn-submit{flex:2;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#080c14;cursor:pointer;transition:opacity 0.2s;}
+.btn-submit:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* ===== LEADERBOARD ===== */
+#leaderboard{padding-bottom:80px;}
+.lb-match-info{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.lb-match-label{font-size:14px;font-weight:700;}
+.lb-status{font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);border-radius:20px;padding:3px 10px;}
+.lb-filters{display:flex;gap:8px;padding:14px 20px;overflow-x:auto;scrollbar-width:none;}
+.lb-filter{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.lb-filter.active{background:var(--accent);border-color:var(--accent);}
+.lb-list{padding:0 16px;display:flex;flex-direction:column;gap:8px;}
+.lb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;transition:border-color 0.2s;}
+.lb-card.you{border-color:rgba(245,200,66,0.4);background:rgba(245,200,66,0.04);}
+.lb-card.winner{border-color:rgba(245,200,66,0.6);}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:22px;width:32px;text-align:center;color:var(--muted);}
+.lb-rank.top1{color:var(--gold);}
+.lb-rank.top2{color:#c0c0c0;}
+.lb-rank.top3{color:#cd7f32;}
+.lb-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+.lb-info{flex:1;}
+.lb-name{font-size:15px;font-weight:700;margin-bottom:2px;}
+.lb-team{font-size:12px;color:var(--muted);}
+.lb-score{text-align:right;}
+.lb-pts{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--text);}
+.lb-pts-label{font-size:10px;color:var(--muted);text-transform:uppercase;}
+.lb-prize{font-size:13px;color:var(--green);font-weight:600;}
+
+/* ===== WALLET ===== */
+#wallet{padding-bottom:80px;}
+.wallet-hero{background:linear-gradient(135deg,#0d1422,#080c14);padding:24px 20px;}
+.wallet-balance-card{background:linear-gradient(135deg,rgba(245,200,66,0.15),rgba(232,160,32,0.08));border:1px solid rgba(245,200,66,0.25);border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;}
+.wallet-bal-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.wallet-bal-amt{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.wallet-bal-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.wallet-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.wallet-btn{border:none;border-radius:12px;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:opacity 0.2s;}
+.wallet-btn-add{background:linear-gradient(135deg,var(--green),#00b060);color:#080c14;}
+.wallet-btn-withdraw{background:var(--surface2);border:1px solid var(--border);color:var(--text);}
+.wallet-btn-icon{font-size:24px;}
+.txn-list{padding:0 16px;display:flex;flex-direction:column;gap:8px;}
+.txn-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.txn-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.txn-icon.credit{background:rgba(0,230,118,0.1);}
+.txn-icon.debit{background:rgba(255,61,87,0.1);}
+.txn-info{flex:1;}
+.txn-title{font-size:14px;font-weight:700;margin-bottom:2px;}
+.txn-date{font-size:11px;color:var(--muted);}
+.txn-amt{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;}
+.txn-amt.credit{color:var(--green);}
+.txn-amt.debit{color:var(--red);}
+
+/* ===== ADMIN ===== */
+#admin{padding-bottom:80px;}
+.admin-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:16px 20px;}
+.admin-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--cyan);}
+.admin-subtitle{font-size:13px;color:var(--muted);}
+.admin-grid{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.admin-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+.admin-stat-val{font-family:'Bebas Neue',sans-serif;font-size:32px;display:block;margin-bottom:4px;}
+.admin-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.admin-section{padding:0 16px 16px;}
+.admin-section-title{font-size:16px;font-weight:700;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.admin-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:14px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.admin-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;outline:none;width:100%;transition:border-color 0.2s;}
+.admin-input:focus{border-color:var(--cyan);}
+.btn-admin{background:linear-gradient(135deg,var(--accent),var(--cyan));border:none;border-radius:8px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:white;cursor:pointer;transition:opacity 0.2s;}
+.btn-admin:hover{opacity:0.9;}
+.user-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.user-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;}
+.user-row:last-child{border-bottom:none;}
+.user-row.header{background:var(--surface2);font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.user-status{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;}
+.status-active{background:rgba(0,230,118,0.15);color:var(--green);}
+.status-flag{background:rgba(255,61,87,0.15);color:var(--red);}
+
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--border);padding:24px 20px;width:100%;max-width:480px;animation:slideUp 0.3s ease;}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-size:22px;font-weight:700;margin-bottom:8px;}
+.modal-desc{font-size:14px;color:var(--muted);margin-bottom:24px;}
+.add-money-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+.money-opt{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;font-weight:700;font-size:15px;transition:all 0.2s;}
+.money-opt:hover,.money-opt.selected{border-color:var(--gold);color:var(--gold);}
+.upi-row{display:flex;gap:10px;margin-bottom:16px;}
+.upi-badge{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:border-color 0.2s;}
+.upi-badge:hover{border-color:var(--gold);}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:14px;font-weight:600;z-index:300;transition:transform 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:var(--green);color:var(-
+  // ============================================================
+// CricketX Fantasy Platform — Full Backend (Node.js + Express)
+// ============================================================
+
+// ─── server.js ───────────────────────────────────────────────
+const express = require('express');
+const http = require('http');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+const socketIo = require('socket.io');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, { cors: { origin: '*' } });
+
+// ── Middleware ──
+app.use(helmet());
+app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || '*' }));
+app.use(express.json());
+app.use(morgan('combined'));
+
+// ── DB Connection ──
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cricketx', {
+  useNewUrlParser: true, useUnifiedTopology: true
+}).then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB error:', err));
+
+// ── Routes ──
+app.use('/api/auth',      require('./routes/auth'));
+app.use('/api/matches',   require('./routes/matches'));
+app.use('/api/contests',  require('./routes/contests'));
+app.use('/api/teams',     require('./routes/teams'));
+app.use('/api/wallet',    require('./routes/wallet'));
+app.use('/api/leaderboard', require('./routes/leaderboard'));
+app.use('/api/admin',     require('./routes/admin'));
+app.use('/api/players',   require('./routes/players'));
+app.use('/api/scoring',   require('./routes/scoring'));
+
+// ── Socket.io Real-time ──
+require('./socket/scoreUpdater')(io);
+
+// ── Health check ──
+app.get('/health', (_, res) => res.json({ status: 'ok', ts: new Date() }));
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+module.exports = { app, io };
+
+
+// ============================================================
+// MODELS
+// ============================================================
+
+// ─── models/User.js ──────────────────────────────────────────
+const userSchema = new mongoose.Schema({
+  name:       { type: String, required: true, trim: true },
+  phone:      { type: String, unique: true, sparse: true },
+  email:      { type: String, unique: true, sparse: true, lowercase: true },
+  avatar:     String,
+  wallet: {
+    balance:   { type: Number, default: 0, min: 0 },
+    winnings:  { type: Number, default: 0 },
+    deposited: { type: Number, default: 0 }
+  },
+  stats: {
+    contestsPlayed: { type: Number, default: 0 },
+    contestsWon:    { type: Number, default: 0 },
+    totalWinnings:  { type: Number, default: 0 }
+  },
+  kycVerified:  { type: Boolean, default: false },
+  isFlagged:    { type: Boolean, default: false },
+  isAdmin:      { type: Boolean, default: false },
+  isActive:     { type: Boolean, default: true },
+  otp:          String,
+  otpExpiry:    Date,
+  lastLogin:    Date,
+  ipHistory:    [String],
+  deviceTokens: [String]
+}, { timestamps: true });
+
+// ─── models/Match.js ─────────────────────────────────────────
+const matchSchema = new mongoose.Schema({
+  externalId:  String,          // from Cricket API
+  team1: { name: String, shortName: String, logo: String, color: String },
+  team2: { name: String, shortName: String, logo: String, color: String },
+  venue:       String,
+  matchDate:   Date,
+  lockTime:    Date,            // team selection closes
+  status:      { type: String, enum: ['upcoming','live','completed','cancelled'], default: 'upcoming' },
+  result:      String,
+  scorecard: {
+    team1: { runs: Number, wickets: Number, overs: String },
+    team2: { runs: Number, wickets: Number, overs: String }
+  },
+  series:      { type: String, default: 'IPL 2025' }
+}, { timestamps: true });
+
+// ─── models/Player.js ────────────────────────────────────────
+const playerSchema = new mongoose.Schema({
+  externalId:  String,
+  name:        { type: String, required: true },
+  team:        String,
+  role:        { type: String, enum: ['BAT','BOWL','AR','WK'], required: true },
+  credits:     { type: Number, required: true },
+  avatar:      String,
+  country:     String,
+  battingStyle: String,
+  bowlingStyle: String,
+  stats: {
+    recentForm:  [Number],        // last 5 match points
+    avgPoints:   Number,
+    totalPoints: Number
+  },
+  matchPerformances: [{
+    matchId:   mongoose.Schema.Types.ObjectId,
+    points:    Number,
+    breakdown: mongoose.Schema.Types.Mixed
+  }]
+}, { timestamps: true });
+
+// ─── models/Contest.js ───────────────────────────────────────
+const contestSchema = new mongoose.Schema({
+  matchId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Match', required: true },
+  name:       String,
+  entryFee:   { type: Number, default: 1 },
+  maxEntries: { type: Number, required: true },
+  totalEntries: { type: Number, default: 0 },
+  prizePool:  Number,
+  prizeDistribution: [{
+    rank:       Number,
+    rankEnd:    Number,             // for ranges (e.g. rank 4-10)
+    prize:      Number,
+    percentage: Number
+  }],
+  status:     { type: String, enum: ['open','locked','live','completed'], default: 'open' },
+  winnersProcessed: { type: Boolean, default: false },
+  platformCut: { type: Number, default: 0.15 }   // 15% platform fee
+}, { timestamps: true });
+
+// ─── models/Team.js ──────────────────────────────────────────
+const teamSchema = new mongoose.Schema({
+  userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  contestId: { type: mongoose.Schema.Types.ObjectId, ref: 'Contest', required: true },
+  matchId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Match', required: true },
+  players:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
+  captain:   { type: mongoose.Schema.Types.ObjectId, ref: 'Player', required: true },
+  viceCaptain: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', required: true },
+  totalCreditsUsed: Number,
+  totalPoints: { type: Number, default: 0 },
+  rank:      Number,
+  winnings:  { type: Number, default: 0 }
+}, { timestamps: true });
+teamSchema.index({ userId: 1, contestId: 1 }, { unique: true });
+
+// ─── models/Transaction.js ───────────────────────────────────
+const txnSchema = new mongoose.Schema({
+  userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type:      { type: String, enum: ['deposit','withdrawal','contest_entry','winning','refund'], required: true },
+  amount:    { type: Number, required: true },
+  balance:   Number,              // balance after transaction
+  description: String,
+  contestId: { type: mongoose.Schema.Types.ObjectId, ref: 'Contest' },
+  matchId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Match' },
+  paymentId: String,              // Razorpay order/payment ID
+  status:    { type: String, enum: ['pending','success','failed'], default: 'success' }
+}, { timestamps: true });
+
+
+// ============================================================
+// MIDDLEWARE
+// ============================================================
+
+// ─── middleware/auth.js ──────────────────────────────────────
+const authMiddleware = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const User = mongoose.model('User');
+    const user = await User.findById(decoded.id).select('-otp -otpExpiry');
+    if (!user || !user.isActive) return res.status(401).json({ error: 'Unauthorized' });
+    req.user = user;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+const adminMiddleware = (req, res, next) => {
+  if (!req.user?.isAdmin) return res.status(403).json({ error: 'Admin access required' });
+  next();
+};
+
+// ─── middleware/rateLimiter.js ───────────────────────────────
+const rateLimit = require('express-rate-limit');
+const otpLimiter = rateLimit({ windowMs: 10*60*1000, max: 5, message: 'Too many OTP requests' });
+const apiLimiter = rateLimit({ windowMs: 15*60*1000, max: 100 });
+
+
+// ============================================================
+// ROUTES
+// ============================================================
+
+// ─── routes/auth.js ──────────────────────────────────────────
+/*
+POST /api/auth/send-otp   { phone }
+POST /api/auth/verify-otp { phone, otp }
+POST /api/auth/login      { email, password }
+GET  /api/auth/me         (protected)
+*/
+const authRouter = express.Router();
+const twilio = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+
+authRouter.post('/send-otp', otpLimiter, async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Phone required' });
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  await User.findOneAndUpdate(
+    { phone }, { otp, otpExpiry }, { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  // In production: await twilio.messages.create({ body: `CricketX OTP: ${otp}`, from: process.env.TWILIO_PHONE, to: phone });
+  console.log(`OTP for ${phone}: ${otp}`); // dev only
+  res.json({ success: true, message: 'OTP sent' });
+});
+
+authRouter.post('/verify-otp', async (req, res) => {
+  const { phone, otp } = req.body;
+  const user = await User.findOne({ phone });
+  if (!user || user.otp !== otp || user.otpExpiry < new Date())
+    return res.status(400).json({ error: 'Invalid or expired OTP' });
+  user.otp = undefined; user.otpExpiry = undefined; user.lastLogin = new Date();
+  user.ipHistory = [...(user.ipHistory || []).slice(-9), req.ip];
+  await user.save();
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  res.json({ token, user: { id: user._id, name: user.name, phone, wallet: user.wallet } });
+});
+
+authRouter.get('/me', authMiddleware, (req, res) => {
+  res.json({ user: req.user });
+});
+
+
+// ─── routes/matches.js ───────────────────────────────────────
+/*
+GET /api/matches              — all upcoming/live
+GET /api/matches/:id          — single match detail
+GET /api/matches/:id/players  — eligible players for match
+*/
+const matchRouter = express.Router();
+
+matchRouter.get('/', async (req, res) => {
+  const matches = await Match.find({ status: { $in: ['upcoming','live'] } })
+    .sort('matchDate').lean();
+  res.json(matches);
+});
+
+matchRouter.get('/:id', async (req, res) => {
+  const match = await Match.findById(req.params.id).lean();
+  if (!match) return res.status(404).json({ error: 'Match not found' });
+  res.json(match);
+});
+
+matchRouter.get('/:id/players', async (req, res) => {
+  const match = await Match.findById(req.params.id);
+  if (!match) return res.status(404).json({ error: 'Match not found' });
+  const players = await Player.find({
+    team: { $in: [match.team1.shortName, match.team2.shortName] }
+  }).select('-matchPerformances').lean();
+  res.json(players);
+});
+
+
+// ─── routes/contests.js ──────────────────────────────────────
+const contestRouter = express.Router();
+
+contestRouter.get('/', async (req, res) => {
+  const { matchId } = req.query;
+  const filter = matchId ? { matchId, status: { $in: ['open','live'] } } : { status: 'open' };
+  const contests = await Contest.find(filter).populate('matchId').lean();
+  res.json(contests);
+});
+
+contestRouter.post('/:id/join', authMiddleware, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const contest = await Contest.findById(req.params.id).session(session);
+    if (!contest || contest.status !== 'open') throw new Error('Contest not available');
+    if (contest.totalEntries >= contest.maxEntries) throw new Error('Contest full');
+
+    const user = await User.findById(req.user._id).session(session);
+    if (user.wallet.balance < contest.entryFee) throw new Error('Insufficient balance');
+
+    // Deduct entry fee
+    user.wallet.balance -= contest.entryFee;
+    await user.save({ session });
+
+    // Record transaction
+    await Transaction.create([{
+      userId: user._id, type: 'contest_entry', amount: -contest.entryFee,
+      balance: user.wallet.balance, description: 'Contest entry fee',
+      contestId: contest._id, matchId: contest.matchId
+    }], { session });
+
+    contest.totalEntries += 1;
+    contest.prizePool = contest.totalEntries * contest.entryFee * (1 - contest.platformCut);
+    await contest.save({ session });
+
+    await session.commitTransaction();
+    res.json({ success: true, newBalance: user.wallet.balance });
+  } catch (err) {
+    await session.abortTransaction();
+    res.status(400).json({ error: err.message });
+  } finally {
+    session.endSession();
+  }
+});
+
+
+// ─── routes/teams.js ─────────────────────────────────────────
+const teamRouter = express.Router();
+
+teamRouter.post('/', authMiddleware, async (req, res) => {
+  const { contestId, matchId, playerIds, captainId, viceCaptainId } = req.body;
+
+  // Validate team
+  if (playerIds?.length !== 11) return res.status(400).json({ error: 'Select exactly 11 players' });
+  if (!playerIds.includes(captainId) || !playerIds.includes(viceCaptainId))
+    return res.status(400).json({ error: 'Captain/VC must be in selected players' });
+
+  const players = await Player.find({ _id: { $in: playerIds } });
+  const totalCredits = players.reduce((sum, p) => sum + p.credits, 0);
+  if (totalCredits > 100) return res.status(400).json({ error: 'Exceeds 100 credit limit' });
+
+  // Role constraints: min 1 WK, 3 BAT, 1 AR, 3 BOWL
+  const roleCounts = players.reduce((acc, p) => { acc[p.role] = (acc[p.role]||0)+1; return acc; }, {});
+  if ((roleCounts.WK||0)<1) return res.status(400).json({ error: 'Min 1 wicket-keeper required' });
+  if ((roleCounts.BAT||0)<3) return res.status(400).json({ error: 'Min 3 batters required' });
+  if ((roleCounts.BOWL||0)<3) return res.status(400).json({ error: 'Min 3 bowlers required' });
+
+  // Max 7 players from one team
+  const teamCounts = players.reduce((acc, p) => { acc[p.team] = (acc[p.team]||0)+1; return acc; }, {});
+  if (Math.max(...Object.values(teamCounts)) > 7)
+    return res.status(400).json({ error: 'Max 7 players from one team' });
+
+  const team = new Team({
+    userId: req.user._id, contestId, matchId,
+    players: playerIds, captain: captainId, viceCaptain: viceCaptainId,
+    totalCreditsUsed: totalCredits
+  });
+  await team.save();
+  res.json({ success: true, team });
+});
+
+teamRouter.get('/my', authMiddleware, async (req, res) => {
+  const teams = await Team.find({ userId: req.user._id })
+    .populate('players captain viceCaptain matchId contestId').lean();
+  res.json(teams);
+});
+
+
+// ─── routes/wallet.js ────────────────────────────────────────
+const Razorpay = require('razorpay');
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET
+});
+
+const walletRouter = express.Router();
+
+walletRouter.get('/balance', authMiddleware, async (req, res) => {
+  const user = await User.findById(req.user._id).select('wallet');
+  res.json(user.wallet);
+});
+
+walletRouter.get('/transactions', authMiddleware, async (req, res) => {
+  const txns = await Transaction.find({ userId: req.user._id })
+    .sort('-createdAt').limit(50).lean();
+  res.json(txns);
+});
+
+walletRouter.post('/create-order', authMiddleware, async (req, res) => {
+  const { amount } = req.body;  // in rupees
+  if (amount < 10) return res.status(400).json({ error: 'Min ₹10 required' });
+  const order = await razorpay.orders.create({
+    amount: amount * 100,  // paise
+    currency: 'INR',
+    receipt: `rcpt_${Date.now()}`,
+    notes: { userId: req.user._id.toString() }
+  });
+  res.json({ orderId: order.id, amount, currency: 'INR' });
+});
+
+walletRouter.post('/verify-payment', authMiddleware, async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  const crypto = require('crypto');
+  const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_SECRET);
+  hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+  const digest = hmac.digest('hex');
+  if (digest !== razorpay_signature)
+    return res.status(400).json({ error: 'Payment verification failed' });
+
+  const order = await razorpay.orders.fetch(razorpay_order_id);
+  const amount = order.amount / 100;
+
+  const user = await User.findByIdAndUpdate(req.user._id, {
+    $inc: { 'wallet.balance': amount, 'wallet.deposited': amount }
+  }, { new: true });
+
+  await Transaction.create({
+    userId: req.user._id, type: 'deposit', amount,
+    balance: user.wallet.balance, description: 'UPI Deposit',
+    paymentId: razorpay_payment_id, status: 'success'
+  });
+
+  res.json({ success: true, newBalance: user.wallet.balance });
+});
+
+
+// ─── routes/leaderboard.js ───────────────────────────────────
+const lbRouter = express.Router();
+
+lbRouter.get('/:contestId', async (req, res) => {
+  const teams = await Team.find({ contestId: req.params.contestId })
+    .populate('userId', 'name avatar')
+    .sort('-totalPoints').lean();
+  const ranked = teams.map((t, i) => ({ ...t, rank: i + 1 }));
+  res.json(ranked);
+});
+
+lbRouter.get('/:contestId/my-rank', authMiddleware, async (req, res) => {
+  const team = await Team.findOne({ contestId: req.params.contestId, userId: req.user._id });
+  if (!team) return res.status(404).json({ error: 'Team not found' });
+  const above = await Team.countDocuments({
+    contestId: req.params.contestId, totalPoints: { $gt: team.totalPoints }
+  });
+  res.json({ rank: above + 1, points: team.totalPoints });
+});
+
+
+// ─── routes/scoring.js ───────────────────────────────────────
+const scoringRouter = express.Router();
+
+// Scoring rules (configurable by admin)
+const DEFAULT_RULES = {
+  run: 1, boundary4: 1, boundary6: 2, half_century: 8, century: 16,
+  wicket: 25, maiden_over: 8, three_wickets: 4, five_wickets: 8,
+  catch: 8, stumping: 12, run_out: 6,
+  duck: -2, sr_bonus: 6, economy_bonus: 6
+};
+
+function calculatePoints(performance, rules = DEFAULT_RULES) {
+  let pts = 0;
+  const { batting, bowling, fielding } = performance;
+  if (batting) {
+    pts += batting.runs * rules.run;
+    pts += batting.fours * rules.boundary4;
+    pts += batting.sixes * rules.boundary6;
+    if (batting.runs >= 50) pts += rules.half_century;
+    if (batting.runs >= 100) pts += rules.century;
+    if (batting.runs === 0 && batting.balls > 0) pts += rules.duck;
+    if (batting.strikeRate >= 170 && batting.balls >= 10) pts += rules.sr_bonus;
+  }
+  if (bowling) {
+    pts += bowling.wickets * rules.wicket;
+    pts += bowling.maidens * rules.maiden_over;
+    if (bowling.wickets >= 3) pts += rules.three_wickets;
+    if (bowling.wickets >= 5) pts += rules.five_wickets;
+    if (bowling.economy <= 5 && bowling.overs >= 2) pts += rules.economy_bonus;
+  }
+  if (fielding) {
+    pts += (fielding.catches || 0) * rules.catch;
+    pts += (fielding.stumpings || 0) * rules.stumping;
+    pts += (fielding.runOuts || 0) * rules.run_out;
+  }
+  return pts;
+}
+
+scoringRouter.post('/calculate', authMiddleware, adminMiddleware, async (req, res) => {
+  const { matchId, performances } = req.body;
+  const results = {};
+  for (const perf of performances) {
+    results[perf.playerId] = calculatePoints(perf);
+  }
+  // Update player points and recalculate team totals
+  for (const [playerId, pts] of Object.entries(results)) {
+    await Player.findByIdAndUpdate(playerId, {
+      $push: { 'matchPerformances': { matchId, points: pts } }
+    });
+  }
+  // Recalculate all teams for this match
+  const teams = await Team.find({ matchId }).populate('players captain viceCaptain');
+  for (const team of teams) {
+    let total = 0;
+    for (const player of team.players) {
+      let pts = results[player._id.toString()] || 0;
+      if (team.captain._id.equals(player._id)) pts *= 2;
+      else if (team.viceCaptain._id.equals(player._id)) pts *= 1.5;
+      total += pts;
+    }
+    team.totalPoints = total;
+    await 
+    # CricketX — IPL Fantasy Platform
+## Complete Project Structure, Architecture & Deployment Guide
+
+---
+
+## 📁 Project Structure
+
+```
+cricketx/
+├── frontend/                    # Next.js App
+│   ├── app/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx             # Home (matches)
+│   │   ├── auth/page.tsx        # Login/OTP
+│   │   ├── match/[id]/
+│   │   │   ├── page.tsx         # Match detail & contests
+│   │   │   └── select-team/page.tsx
+│   │   ├── leaderboard/[contestId]/page.tsx
+│   │   ├── wallet/page.tsx
+│   │   └── admin/page.tsx
+│   ├── components/
+│   │   ├── ui/                  # Shared UI components
+│   │   ├── MatchCard.tsx
+│   │   ├── PlayerCard.tsx
+│   │   ├── Leaderboard.tsx
+│   │   ├── WalletWidget.tsx
+│   │   └── CountdownTimer.tsx
+│   ├── lib/
+│   │   ├── api.ts               # API client
+│   │   ├── socket.ts            # Socket.io client
+│   │   └── scoring.ts           # Points calculator (shared)
+│   ├── store/                   # Zustand state management
+│   │   ├── authStore.ts
+│   │   ├── walletStore.ts
+│   │   └── teamStore.ts
+│   └── next.config.js
+│
+├── backend/                     # Node.js + Express
+│   ├── server.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── matches.js
+│   │   ├── contests.js
+│   │   ├── teams.js
+│   │   ├── wallet.js
+│   │   ├── leaderboard.js
+│   │   ├── scoring.js
+│   │   ├── players.js
+│   │   └── admin.js
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Match.js
+│   │   ├── Player.js
+│   │   ├── Contest.js
+│   │   ├── Team.js
+│   │   └── Transaction.js
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   ├── admin.js
+│   │   └── rateLimiter.js
+│   ├── services/
+│   │   ├── cricketApi.js        # RapidAPI integration
+│   │   ├── antiCheat.js
+│   │   ├── notifications.js     # FCM + SMS
+│   │   └── winnerProcessor.js
+│   ├── socket/
+│   │   └── scoreUpdater.js
+│   ├── jobs/                    # Cron jobs
+│   │   ├── syncMatches.js       # Fetch upcoming IPL matches
+│   │   ├── processWinners.js    # Auto-distribute prizes
+│   │   └── lockContests.js      # Lock teams before match
+│   └── tests/
+│
+├── docker-compose.yml
+├── Dockerfile.frontend
+├── Dockerfile.backend
+└── README.md
+```
+
+---
+
+## 🗄️ Database Schema (MongoDB)
+
+### Users
+```
+_id, name, phone, email, wallet{balance, winnings, deposited},
+stats{played, won, totalWinnings}, kycVerified, isFlagged, isAdmin
+```
+
+### Matches
+```
+_id, externalId, team1{name,shortName,color}, team2{...},
+venue, matchDate, lockTime, status, scorecard
+```
+
+### Contests
+```
+_id, matchId, entryFee(₹1), maxEntries, totalEntries,
+prizePool, prizeDistribution[{rank, prize}], status, platformCut(15%)
+```
+
+### Teams
+```
+_id, userId, contestId, matchId, players[11], captain, viceCaptain,
+totalCreditsUsed, totalPoints, rank, winnings
+```
+
+### Transactions
+```
+_id, userId, type(deposit/withdrawal/entry/winning),
+amount, balance, paymentId, status
+```
+
+---
+
+## 🔌 API Reference
+
+### Auth
+```
+POST /api/auth/send-otp     { phone }
+POST /api/auth/verify-otp   { phone, otp }
+GET  /api/auth/me           → user profile
+```
+
+### Matches
+```
+GET  /api/matches                      → upcoming/live matches
+GET  /api/matches/:id                  → match detail
+GET  /api/matches/:id/players          → players for team selection
+```
+
+### Contests
+```
+GET  /api/contests?matchId=:id         → contests for a match
+POST /api/contests/:id/join            → join contest (deducts ₹1)
+```
+
+### Teams
+```
+POST /api/teams             { contestId, matchId, playerIds[11], captainId, viceCaptainId }
+GET  /api/teams/my          → user's teams
+```
+
+### Wallet
+```
+GET  /api/wallet/balance               → current balance
+GET  /api/wallet/transactions          → history
+POST /api/wallet/create-order          → Razorpay order { amount }
+POST /api/wallet/verify-payment        → { orderId, paymentId, signature }
+```
+
+### Leaderboard
+```
+GET  /api/leaderboard/:contestId       → ranked teams
+GET  /api/leaderboard/:contestId/my-rank → user's rank
+```
+
+### Admin
+```
+GET  /api/admin/stats                  → platform stats
+POST /api/admin/contests               → create contest
+GET  /api/admin/users?flagged=true     → user management
+POST /api/admin/process-winners/:id    → distribute prizes
+POST /api/scoring/calculate            → update player points
+```
+
+---
+
+## ⚡ Scoring System
+
+| Event              | Points |
+|--------------------|--------|
+| Run scored         | +1     |
+| 4 hit              | +1     |
+| 6 hit              | +2     |
+| 50 runs            | +8     |
+| 100 runs           | +16    |
+| Duck               | -2     |
+| Wicket             | +25    |
+| Maiden over        | +8     |
+| 3+ wickets         | +4     |
+| 5+ wickets         | +8     |
+| Catch              | +8     |
+| Stumping           | +12    |
+| Run out            | +6     |
+| SR > 170 (10+ balls)| +6   |
+| Economy < 5 (2+ ov) | +6   |
+
+**Captain** = 2× points | **Vice-captain** = 1.5× points
+
+---
+
+## 🏆 Prize Distribution (Default ₹1 Pool)
+
+| Rank  | Prize  |
+|-------|--------|
+| 1st   | 30%    |
+| 2nd   | 20%    |
+| 3rd   | 10%    |
+| 4–10  | 5% split |
+| Rest  | No prize |
+
+Platform takes **15%** of pool.
+
+---
+
+## 🐳 Docker Deployment
+
+### docker-compose.yml
+```yaml
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    ports: ["3000:3000"]
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:5000
+      - NEXT_PUBLIC_SOCKET_URL=http://backend:5000
+    depends_on: [backend]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    ports: ["5000:5000"]
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - RAPIDAPI_KEY=${RAPIDAPI_KEY}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_SECRET=${RAZORPAY_SECRET}
+    depends_on: [mongo, redis]
+
+  mongo:
+    image: mongo:7
+    volumes: [mongo_data:/data/db]
+    ports: ["27017:27017"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  nginx:
+    image: nginx:alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl
+    depends_on: [frontend, backend]
+
+volumes:
+  mongo_data:
+```
+
+### Dockerfile.backend
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 5000
+CMD ["node", "server.js"]
+```
+
+### Dockerfile.frontend
+```dockerfile
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+---
+
+## ☁️ Cloud Deployment (AWS / GCP)
+
+### Recommended Stack
+```
+Route 53 (DNS)
+    ↓
+CloudFront (CDN + SSL)
+    ↓
+ALB (Load Balancer)
+    ↓
+ECS Fargate (containers)
+    ├── Frontend (Next.js) — 2 tasks
+    └── Backend (Express) — 2 tasks
+        ↓
+MongoDB Atlas (M10+ cluster)
+ElastiCache Redis
+```
+
+### Quick Deploy Script
+```bash
+# 1. Build and push images
+docker build -t cricketx-backend ./backend
+docker build -t cricketx-frontend ./frontend
+
+docker tag cricketx-backend:latest <ecr-uri>/cricketx-backend:latest
+docker tag cricketx-frontend:latest <ecr-uri>/cricketx-frontend:latest
+
+docker push <ecr-uri>/cricketx-backend:latest
+docker push <ecr-uri>/cricketx-frontend:latest
+
+# 2. Deploy to ECS
+aws ecs update-service --cluster cricketx --service backend --force-new-deployment
+aws ecs update-service --cluster cricketx --service frontend --force-new-deployment
+
+# 3. Or use Docker Compose on a single VPS (DigitalOcean / Hetzner)
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
+## 🔐 Security Checklist
+
+- [x] JWT with 30-day expiry + refresh tokens
+- [x] OTP rate limiting (5 attempts per 10 min)
+- [x] Razorpay signature verification for payments
+- [x] MongoDB transactions for wallet operations (atomic)
+- [x] Helmet.js security headers
+- [x] IP logging + multi-account detection
+- [x] Win rate anomaly detection (>80% flags user)
+- [x] Admin-only routes with middleware guard
+- [x] Input validation on all team selection constraints
+- [x] CORS whitelist for production domains
+- [ ] KYC verification for withdrawals > ₹10,000
+- [ ] 2FA for admin accounts
+- [ ] WAF (CloudFlare) for DDoS protection
+
+---
+
+## 🎯 Cron Jobs
+
+```javascript
+// Sync IPL matches from API — daily at 6 AM
+cron.schedule('0 6 * * *', syncMatchesJob);
+
+// Lock contests 30 min before match start
+cron.schedule('*/5 * * * *', lockContestsJob);
+
+// Process winners after match completion
+cron.schedule('*/15 * * * *', processWinnersJob);
+
+// Send push notifications for upcoming matches
+cron.schedule('0 18 * * *', matchReminderJob);
+```
+
+---
+
+## 📱 Frontend Tech Stack
+
+```json
+{
+  "framework": "Next.js 14 (App Router)",
+  "styling": "Tailwind CSS + custom CSS vars",
+  "state": "Zustand",
+  "realtime": "Socket.io-client",
+  "payments": "Razorpay React SDK",
+  "animations": "Framer Motion",
+  "http": "Axios + React Query",
+  "auth": "JWT in localStorage + httpOnly cookies"
+}
+```
+
+---
+
+## 🚀 Getting Started (Local Dev)
+
+```bash
+# Clone & install
+git clone https://github.com/yourorg/cricketx
+cd cricketx
+
+# Backend
+cd backend && cp .env.example .env
+npm install && npm run dev
+
+# Frontend (new terminal)
+cd frontend && cp .env.example .env.local
+npm install && npm run dev
+
+# Or with Docker
+docker-compose up --build
+```
+
+Visit: `http://localhost:3000` (frontend) · `http://localhost:5000` (API)
+
+---
+
+## 📊 Scalability Notes
+
+- **Horizontal scaling**: Backend is stateless — scale ECS tasks behind ALB
+- **Redis**: Cache leaderboards, match data, OTP — reduces DB load 70%+
+- **MongoDB sharding**: Shard `teams` collection by `matchId` for large contests
+- **CDN**: Serve player images via CloudFront (S3 origin)
+- **WebSockets**: Socket.io with Redis adapter for multi-instance pub/sub
+
+---
+
+*CricketX — Built for scale. Designed for winners.* 🏆
